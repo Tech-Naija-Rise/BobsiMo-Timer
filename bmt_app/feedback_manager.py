@@ -1,5 +1,7 @@
-from gui_maker import appLayoutModifier 
+import webbrowser as wb
+from gui_maker import appLayoutModifier
 from constants import *
+
 
 class feedbackManager(appLayoutModifier):
 
@@ -37,7 +39,6 @@ class feedbackManager(appLayoutModifier):
 
         self.ButtonMaker(self.options_area, 'Send Feedback',
                          command=self.send_feedback)
-        self.feedback_win.mainloop()
 
     def _textareaplaceholder(self):
         # Place holder
@@ -74,3 +75,11 @@ class feedbackManager(appLayoutModifier):
         with open(f"{self.FEEDBACK_DIR}\\FB.json", 'a') as fdb:
             json.dump(self.the_feedback, fdb, indent=4,
                       separators=(',', ':'))
+
+
+class sendFeedback():
+    def __init__(self, caller):
+        self.caller = caller
+        self.url = 'https://mail.google.com/mail/?extsrc=mailto&url=mailto%3Atechnaijarise%40gmail.com'
+        self.default = wb.WindowsDefault('feedback')
+        self.default.open_new_tab(self.url)

@@ -28,7 +28,7 @@ app_icon = "./_internal/appdata/imgs/BMT_logo.ico"
 # NOTE: Use this in development instead
 #  but comment out before production
 # DEV
-# app_icon = "BMT_logo.ico"
+app_icon = "BMT_logo.ico"
 
 
 # this is for debugging purpose

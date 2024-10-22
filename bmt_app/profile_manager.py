@@ -331,9 +331,7 @@ how much time you have left""", bg='#ddd', fg='#555'):
         The parent is prompted to make a profile for all of the kids who
         will be using the computer. This is the activation.
         """
-        from settings import Settings
-        self.SETTINGS = Settings()
-        self.SETTINGS.show_gui()
+        self.launch_profile_creator()
 
         #XXX
     def CTA(self):
@@ -354,7 +352,10 @@ how much time you have left""", bg='#ddd', fg='#555'):
         """Where all sections stay"""
         self.profcreator_win = tk.Toplevel(self.profiles_win)
         self.profcreator_win.wm_title(window_name)
-        self.profcreator_win.wm_iconbitmap(window_icon)
+        try:
+            self.profcreator_win.wm_iconbitmap(window_icon)
+        except Exception:
+            pass
         self.profcreator_win.transient(self.profiles_win)
         self.profcreator_win.grab_set()
 
@@ -423,10 +424,6 @@ how much time you have left""", bg='#ddd', fg='#555'):
 
             self.write_profile(self.profile_info)
 
-            # erase the "no profiles..." warning message
-            self.noProfilesMsg.destroy()
-            self.WidgetBgChanger(self.profileCreateBt, '#eee')
-            self.WidgetFgChanger(self.profileCreateBt, '#111')
 
             self.make_profile_bt(self.username, len(self.profilenames))
             self.PCr.destroy()
@@ -464,3 +461,7 @@ how much time you have left""", bg='#ddd', fg='#555'):
         self.WidgetTextChanger(self.profileInfoViewerText,
                                profile_info_viewer_text)
 # -----------------------------------------------------
+
+
+if __name__ == '__main__':
+    profilesChooser()
