@@ -116,7 +116,7 @@ def start():
         except FileExistsError:
             print(f'({img}) image is there already')
 
-if ['y','ye','yes','YES'] in ask:
+if 'y' in ask:
     start()
-elif ['n','no','No','NO'] in ask:
+elif 'n' in ask:
     print("Then please go to your code and make it production ready!")

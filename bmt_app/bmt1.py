@@ -1,3 +1,4 @@
+from plyer import notification
 from activity_manager import activitiesManager as AM, Activity as ACT
 from feedback_manager import sendFeedback
 from weblink import homePage
@@ -350,10 +351,9 @@ class BMT2(countdownTimer, appLayoutModifier):
 # --------------------------------------------
 
     def responsive_adjust(self, event):
-        """Let the size of the window drive the size of 
+        """Let the size of the window drive the size of
         the big message. and vice versa"""
         width = self.timer_win.winfo_width()
-
 
         if width <= 700:
             self.modify_msg_size(30)
@@ -377,11 +377,11 @@ Welcome to BMT :) """):
         """Change the main big display text
 
         There are 4 `state`s the message can be in.
-        The message can explicitly be changed 
+        The message can explicitly be changed
 
-        ### 1. when the app is started the first time (DEFAULT STATE): 
+        ### 1. when the app is started the first time (DEFAULT STATE):
 
-            "welcome to BobsiMo Timer :)" 
+            "welcome to BobsiMo Timer :)"
 
         ### 2. when the timer starts it is one of \
         2 states depending on the activity (RUNNING STATE):
@@ -396,10 +396,10 @@ Welcome to BMT :) """):
                 (and an optional "you have 3 minutes left" if there's a
                  time limit/duration)
 
-        ### 4. when the user's time is up (TIMEUP STATE) (which is only when 
+        ### 4. when the user's time is up (TIMEUP STATE) (which is only when
              there's a time limit):
 
-                "Your time is up, 
+                "Your time is up,
                 Go to next activity?"
 
         ## DEFAULT STATE
@@ -502,13 +502,25 @@ your activity succesfully""")
                 break
                 # TODO: next--> PAUSE Features
 
+    def notify(self):
+        """Notify the user that his time is up"""
+        msg = f"\
+Congratulations, you have finished 
+the activity: {self.activity.name}."
+        notification.notify(
+            title=f"{self.activity.name} is over",
+            message=msg,
+            app_name=app_name,
+            app_icon=app_icon,
+            timeout=120
+        )
+
     def timeup(self):
         """What happens when the timer finishes"""
         self.GuiUpdateMsg("TIMEUP")
 
-        self.timer_win.wm_deiconify()
         self.timer_win.bell()
-        self.timer_win.grab_set()
+        self.notify()
 
         # NOTE: change the pause button to be to choose
         # a profile from a list of profiles again.
