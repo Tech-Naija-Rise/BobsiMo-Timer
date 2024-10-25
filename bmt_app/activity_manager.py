@@ -4,6 +4,7 @@ from gui_maker import topWindow
 import json
 from constants import app_icon, app_name, computer
 import pathlib
+
 # For Dev only
 app_icon = '.\\BMT_logo.png'
 
@@ -66,6 +67,18 @@ class activitiesManager():
 
         self.caller.activity = act_obj
         self.caller.start_timer(self.act_name, act_obj)
+
+    def delete_activity(self):
+        """Delete all activities"""
+        import os
+        try:
+            os.remove(f'{self.ACTS_PATH}\\activities.json')
+
+        except Exception as e:
+            pass
+
+        for child in self.actsframe.winfo_children():
+            child.destroy()
 
     def select_activity(self, act_obj: Activity, bt):
         """When the activity button is clicked,
@@ -144,11 +157,18 @@ You will now {act_obj.name}"""
 
         self.act_win = topWindow(self.caller.timer_win)
 
-        self.menubar1 = tk.Menu(self.act_win)
+        self.menubar = tk.Menu(self.act_win,tearoff=0)
 
-        self.menubar1.add_command(label='ADD', command=self.show_act_editor)
+        self.edit_menu = tk.Menu(self.act_win,tearoff=0)
+
+        self.edit_menu.add_command(
+            label='ADD ACTIVITY', command=self.show_act_editor)
+        self.edit_menu.add_command(
+            label='DELETE ALL ACTIVITIES', foreground='red', command=self.delete_activity)
+
+        self.menubar.add_cascade(menu=self.edit_menu, label='Edit')
         # self.menubar1.add_command(label='EDIT', command=lambda: self.show_editor())
-        self.act_win.configure(menu=self.menubar1)
+        self.act_win.configure(menu=self.menubar)
 
         self.all_frame = tk.Frame(self.act_win)
         self.all_frame.pack()
@@ -196,6 +216,9 @@ You will now {act_obj.name}"""
         self.title.pack(expand=1)
 
     def gui_main_elements(self):
+        self.msg_frame = tk.Frame(self.mainframe)
+        self.msg_frame.pack(expand=1)
+
         self.actsframe = tk.Frame(self.mainframe)
         self.actsframe.pack(expand=1, fill='y')
 
@@ -204,9 +227,6 @@ You will now {act_obj.name}"""
             self.make_buttons(self.activities)
         else:
             self.show_act_editor()
-
-        self.msg_frame = tk.Frame(self.actsframe)
-        self.msg_frame.pack(expand=1)
 
         self.msg = tk.Label(self.msg_frame,
                             text='Click on an activity \
@@ -237,7 +257,7 @@ button below to focus on',
 
         """
         self.active = act_obj
-        self.ActBt = tk.Button(self.mainframe, font=(
+        self.ActBt = tk.Button(self.actsframe, font=(
             'sans-serif', 10), width=30, text=label,
             command=lambda: self.select_activity(act_obj, self.ActBt))
         self.ActBt.pack(pady=5)

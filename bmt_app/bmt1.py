@@ -1,7 +1,7 @@
 from activity_manager import activitiesManager as AM, Activity as ACT
 from feedback_manager import sendFeedback
 from weblink import homePage
-from gui_maker import Window,appLayoutModifier
+from gui_maker import Window, appLayoutModifier
 from profile_manager import profilesChooser
 from constants import *
 
@@ -301,8 +301,8 @@ class BMT2(countdownTimer, appLayoutModifier):
             self.win_height}+{self.win_x}+{self.win_y}")
 
     def show_gui(self, window_name='BobsiMo Timer', window_icon=app_icon):
+        self.MSG_SIZE = 50
         self.timer_win = Window()
-        
 
         self.timer_win.title(window_name)
 
@@ -345,14 +345,31 @@ class BMT2(countdownTimer, appLayoutModifier):
         # Centering the window must be after all the
         # packing of its children
         # self.__center_window(self.timer_win)
+        self.timer_win.bind('<Configure>', self.responsive_adjust)
         self.timer_win.mainloop()
 # --------------------------------------------
+
+    def responsive_adjust(self, event):
+        """Let the size of the window drive the size of 
+        the big message. and vice versa"""
+        width = self.timer_win.winfo_width()
+
+
+        if width <= 700:
+            self.modify_msg_size(30)
+        else:
+            self.modify_msg_size(50)
+
+    def modify_msg_size(self, width):
+        """Modify the size of the big message"""
+        self.bigMsgTxt['font'] = ('sans-serif', width)
+        return width
 
     def gui_big_msg(self, msg="""\
 Welcome to BMT :) """):
         self.bigMsgTxt = tk.Label(self.bd_area,
                                   text=msg,
-                                  font=('sans-serif', 50),
+                                  font=('sans-serif', self.MSG_SIZE),
                                   fg='green')
         self.bigMsgTxt.pack(fill='both', expand=1)
 
@@ -492,7 +509,6 @@ your activity succesfully""")
         self.timer_win.wm_deiconify()
         self.timer_win.bell()
         self.timer_win.grab_set()
-        self.timer_win.tkraise()
 
         # NOTE: change the pause button to be to choose
         # a profile from a list of profiles again.
@@ -539,8 +555,13 @@ your activity succesfully""")
         else:
             self.bg_task_thread.start()
 
+    def stop_timer(self):
+        """Stop the timer"""
+
 
 def main():
+    # TODO: Make the window resizing to be responsive
+    # i.e. make the text be smaller when the window gets smaller
     BMT2()
 
 

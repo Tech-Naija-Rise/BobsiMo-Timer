@@ -60,7 +60,7 @@ class Window(tk.Tk):
     def __init__(self, screenName=None, baseName=None, className="Tk", useTk=True, sync=False, use=None):
         super().__init__(screenName, baseName, className, useTk, sync, use)
         self.wm_iconbitmap(app_icon)
-        self.tk_setPalette('#aaa')
+        self.tk_setPalette('#eee')
 
     def __center_window(self, any_window):
         """Center the window on screen"""

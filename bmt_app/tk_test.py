@@ -5,11 +5,16 @@ import tkinter.ttk as ttk
 
 root=tk.Tk()
 root.tk_setPalette('#222')
+
 pot=tk.Toplevel()
+
 
 too=tk.Spinbox(pot)
 too.pack()
-too.tk_setPalette
+
+
+too.tk_setPalette()
+
 note=ttk.Notebook(root)
 note.pack(expand=1, fill='both')
 
