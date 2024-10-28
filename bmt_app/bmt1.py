@@ -5,9 +5,38 @@ from weblink import homePage
 from gui_maker import Window, appLayoutModifier
 from profile_manager import profilesChooser
 from constants import *
+import requests
+
+# check for updates
+import requests
 
 
+def check_for_updates(current_version):
+    # URL to your version.json file
+    url = "https://tech-naija-rise.github.io/BobsiMo-Timer/version.json"
 
+    try:
+        # Fetch the JSON data
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an error for bad responses
+
+        # Parse the JSON response
+        data = response.json()
+        latest_version = data['latest_version']
+        download_url = data['download_url']
+        release_notes = data['release_notes']
+
+        # Compare versions
+        if latest_version > current_version:
+            print(f"Update available! Latest version: {latest_version}")
+            print(f"Release notes: {release_notes}")
+            print(f"Download here: {download_url}")
+            # You can also add code to prompt the user to download the update
+        else:
+            print("You are using the latest version.")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error checking for updates: {e}")
 
 
 class countdownTimer:
@@ -177,15 +206,12 @@ to use the computer.""")
 
         self.WidgetFgChanger(self.bigMsgTxt, 'red')
 
-        
         self.timer_win.bell()
-        
 
         self.WidgetTextChanger(self.pauseBt, f"""\
 Switch Profile""")
         self.pauseBt['command'] = self.switch_profile
 
-        
         self.PM_update_prof(
             self.username, self.PM.default_time)
 
@@ -271,9 +297,11 @@ class BMT2(countdownTimer, appLayoutModifier):
 
         helpmenu.add_command(label="BMT Home Page",
                              command=lambda: homePage(self))
-        helpmenu.add_separator()
         helpmenu.add_command(label="Give Feedback",
                              command=lambda: sendFeedback(self))
+        helpmenu.add_separator()
+        helpmenu.add_command(label="Check for Updates",
+                             command=lambda: self.check_for_updates(VERSION))
 
         self.menubar.add_cascade(label='Activities', menu=activities)
         self.menubar.add_cascade(label='Help', menu=helpmenu)
@@ -335,7 +363,7 @@ class BMT2(countdownTimer, appLayoutModifier):
         self.actionBt.pack()
         # ---------------------------------------------
         # self.timer_win.protocol('WM_DELETE_WINDOW', self.exit_protocol)
-        
+
         self.gui_big_msg()
         self.GuiUpdateMsg('DEFAULT')
 
@@ -500,9 +528,9 @@ your activity succesfully""")
     def notify(self):
         """Notify the user that his time is up"""
         msg = f"""\
-Congratulations, you have finished 
+Congratulations, you have finished
 the activity: {self.activity.name}."""
-        
+
         notification.notify(
             title=f"{self.activity.name} is over",
             message=msg,
@@ -527,7 +555,6 @@ the activity: {self.activity.name}."""
         # NOTE: change the pause button to be to choose
         # a profile from a list of profiles again.
         # We don't the app to ever exit for parent mode
-
 
     def resume(self):
         """Resume the timer"""
@@ -569,6 +596,37 @@ the activity: {self.activity.name}."""
 
     def stop_timer(self):
         """Stop the timer"""
+
+    def check_for_updates(self, current_version):
+        threading.Thread(name='updateCheck', target=lambda: self._check_for_updates(
+            current_version)).start()
+
+    def _check_for_updates(self, current_version):
+        # URL to your version.json file
+        url = "https://tech-naija-rise.github.io/BobsiMo-Timer/version.json"
+
+        try:
+            # Fetch the JSON data
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an error for bad responses
+
+            # Parse the JSON response
+            data = response.json()
+            latest_version = data['latest_version']
+            download_url = data['download_url']
+            release_notes = data['release_notes']
+
+            # Compare versions
+            if latest_version > current_version:
+                print(f"Update available! Latest version: {latest_version}")
+                print(f"Release notes: {release_notes}")
+                print(f"Download here: {download_url}")
+                # You can also add code to prompt the user to download the update
+            else:
+                print("You are using the latest version.")
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error checking for updates: {e}")
 
 
 def main():
