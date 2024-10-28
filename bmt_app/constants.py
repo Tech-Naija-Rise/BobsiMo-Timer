@@ -16,12 +16,13 @@ __all__ = ['app_icon',
                'ScrolledText', 'app_name', 'VERSION','computer']
 
 
-VERSION = "1.3.1"
+VERSION = "1.3.5"
 
-app_name = f"BobsiMo Timer {VERSION}"
-
+app_name_only = "BobsiMo Timer"
+app_name = f"{app_name_only} {VERSION}"
 
 # NOTE This is for production only
+
 # PRODUCTION
 app_icon = "./_internal/appdata/imgs/BMT_logo.ico"
 

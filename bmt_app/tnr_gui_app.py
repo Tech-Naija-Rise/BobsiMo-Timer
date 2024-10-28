@@ -13,6 +13,8 @@ too=tk.Spinbox(pot)
 too.pack()
 
 
+
+
 too.tk_setPalette()
 
 note=ttk.Notebook(root)

@@ -7,8 +7,7 @@ from profile_manager import profilesChooser
 from constants import *
 
 
-# TODO: Next task display
-# TODO: Next mini Task : time Up
+
 
 
 class countdownTimer:
@@ -178,20 +177,15 @@ to use the computer.""")
 
         self.WidgetFgChanger(self.bigMsgTxt, 'red')
 
-        self.timer_win.wm_deiconify()
+        
         self.timer_win.bell()
-        self.timer_win.tk_strictMotif(0)
-        self.timer_win.tkraise()
-
-        # NOTE: change the pause button to be to choose
-        # a profile from a list of profiles again.
-        # We don't the app to ever exit
+        
 
         self.WidgetTextChanger(self.pauseBt, f"""\
 Switch Profile""")
         self.pauseBt['command'] = self.switch_profile
 
-        # NOTE:RESET back to default time
+        
         self.PM_update_prof(
             self.username, self.PM.default_time)
 
@@ -341,7 +335,9 @@ class BMT2(countdownTimer, appLayoutModifier):
         self.actionBt.pack()
         # ---------------------------------------------
         # self.timer_win.protocol('WM_DELETE_WINDOW', self.exit_protocol)
+        
         self.gui_big_msg()
+        self.GuiUpdateMsg('DEFAULT')
 
         # Centering the window must be after all the
         # packing of its children
@@ -414,7 +410,7 @@ Welcome to BMT :) """):
         if state.upper() == 'DEFAULT':
             self.WidgetFgChanger(self.bigMsgTxt, 'green')
             self.WidgetTextChanger(self.bigMsgTxt, f"""\
-Welcome to BMT :)""")
+What are you working on? :)""")
 
         elif state.upper() == 'RUNNING':
             self.WidgetFgChanger(self.bigMsgTxt, 'green')
@@ -500,13 +496,13 @@ your activity succesfully""")
             else:
                 self.timeup()
                 break
-                # TODO: next--> PAUSE Features
 
     def notify(self):
         """Notify the user that his time is up"""
-        msg = f"\
+        msg = f"""\
 Congratulations, you have finished 
-the activity: {self.activity.name}."
+the activity: {self.activity.name}."""
+        
         notification.notify(
             title=f"{self.activity.name} is over",
             message=msg,
@@ -520,14 +516,18 @@ the activity: {self.activity.name}."
         self.GuiUpdateMsg("TIMEUP")
 
         self.timer_win.bell()
-        self.notify()
+
+        self.WidgetTextChanger(self.actionBt, f"Go to Activities")
+        self.actionBt['command'] = self.show_activities
+        try:
+            self.notify()
+        except Exception:
+            pass
 
         # NOTE: change the pause button to be to choose
         # a profile from a list of profiles again.
         # We don't the app to ever exit for parent mode
 
-        self.WidgetTextChanger(self.actionBt, f"Go to Activities")
-        self.actionBt['command'] = self.show_activities
 
     def resume(self):
         """Resume the timer"""
@@ -574,6 +574,7 @@ the activity: {self.activity.name}."
 def main():
     # TODO: Make the window resizing to be responsive
     # i.e. make the text be smaller when the window gets smaller
+    # TODO: reset the timer: take it back to "welcome"
     BMT2()
 
 
