@@ -1,4 +1,7 @@
-import threading, subprocess,sys,ctypes
+import threading
+import subprocess
+import sys
+import ctypes
 from gui_maker import Message  # Replace with the actual import
 from plyer import notification  # Replace with the actual import
 import time
@@ -282,6 +285,9 @@ class BMT2(countdownTimer, appLayoutModifier):
         # For break time feature
         self.pause_duration = 5
 
+        # stop flag
+        self.finished = False
+
         super().__init__(self.duration)
         self.show_gui()
 
@@ -495,6 +501,7 @@ your activity succesfully""")
     def task(self, act_obj):
         """This is the thread to run when there's no
         duration/ time limit"""
+        self.finished = False
         self.act_name = act_obj.name
         # count Up instead. depending on
         # the settings of whether he wants
@@ -505,6 +512,7 @@ your activity succesfully""")
 
         ##
 
+    # MAIN
     def timer(self, act_obj):
         """Timer has to have an activity to time
         otherwise what's the purpose"""
@@ -513,8 +521,9 @@ your activity succesfully""")
         self.act_name = self.activity.name
         self.duration = int(self.activity.duration)
         self.dur_type = self.activity.dur_type
-
-        while True:
+        # definitely it is not finished since it is just startting
+        self.finished = False
+        while not self.finished:
             if not self.duration <= 0:
                 if not self._pause:
 
@@ -564,6 +573,7 @@ the activity: {self.activity.name}."""
         # NOTE: change the pause button to be to choose
         # a profile from a list of profiles again.
         # We don't the app to ever exit for parent mode
+
     def stop_timer(self):
         t = threading.Thread(target=self._stop_timer).start()
 
@@ -572,8 +582,9 @@ the activity: {self.activity.name}."""
         the user clicks on Finish button.
         """
         # XXX: this is the lazy way of doing it
-        if self.bg_timer_thread.is_alive():
-            self.bg_timer_thread.join()
+        self.finished = True
+        self.duration = 0
+        self.timeup()
 
     def resume(self):
         """Resume the timer"""
@@ -655,6 +666,7 @@ Would you like to download it now?""")
 
 class BobsimoTimer:
     url = "https://tech-naija-rise.github.io/BobsiMo-Timer/version.json"
+
     def __init__(self):
         self.activity = None
         self.duration = 0
@@ -677,18 +689,18 @@ class BobsimoTimer:
             return ctypes.windll.shell32.IsUserAnAdmin()
         except:
             return False
-        
+
     def relaunch_as_admin(self):
         """Re-launch the application with admin privileges."""
         print("Requesting administrator privileges...")
         try:
             # Construct the command to run the current script as admin
-            command = ['runas', '/user:Administrator', f'"{sys.executable}"'] + [f'"{arg}"' for arg in sys.argv]
+            command = ['runas', '/user:Administrator',
+                       f'"{sys.executable}"'] + [f'"{arg}"' for arg in sys.argv]
             subprocess.call(command)
         except Exception as e:
             print(f"Failed to relaunch as admin: {e}")
         sys.exit()  # Exit the current instance
-
 
     def GuiUpdateMsg(self, state: str):
         """Update the main display message based on the state."""
@@ -698,7 +710,7 @@ class BobsimoTimer:
             'BREAK': self._break_state,
             'TIMEUP': self._timeup_state
         }
-        
+
         state = state.upper()
         if state in states:
             states[state]()
@@ -712,8 +724,8 @@ class BobsimoTimer:
         """Set the message for when the timer is running."""
         self.WidgetFgChanger(self.bigMsgTxt, 'green')
         message = (f"You have {self.duration} {self.dur_type.lower()} left to {self.act_name}."
-                    if self.activity and self.activity.duration 
-                    else f"You are now to {self.act_name}.")
+                   if self.activity and self.activity.duration
+                   else f"You are now to {self.act_name}.")
         self.WidgetTextChanger(self.bigMsgTxt, message)
 
     def _break_state(self):
@@ -721,7 +733,7 @@ class BobsimoTimer:
         self.WidgetFgChanger(self.bigMsgTxt, 'red')
         message = ("You are on a break."
                    f" {self.duration} {self.dur_type} left."
-                   if self.activity and self.activity.duration 
+                   if self.activity and self.activity.duration
                    else "You are now on a break.")
         self.WidgetTextChanger(self.bigMsgTxt, message)
 
@@ -750,11 +762,11 @@ class BobsimoTimer:
     def _init_timer_threads(self, name):
         """Initialize the timer threads."""
         self.bg_timer_thread = threading.Thread(
-            name=f'act with duration: {name}', 
+            name=f'act with duration: {name}',
             target=self.timer
         )
         self.bg_task_thread = threading.Thread(
-            name=f'act only: {name}', 
+            name=f'act only: {name}',
             target=self.task
         )
 
@@ -774,7 +786,7 @@ class BobsimoTimer:
                 self.duration -= 1
             else:
                 time.sleep(1)  # Check every second if paused
-        
+
         self.timeup()
 
     def _get_sleep_duration(self):
@@ -788,7 +800,8 @@ class BobsimoTimer:
 
     def notify(self):
         """Notify the user that their time is up."""
-        msg = f"Congratulations, you have finished the activity: {self.activity.name}."
+        msg = f"Congratulations, you have finished the activity: {
+            self.activity.name}."
         notification.notify(
             title=f"{self.activity.name} is over",
             message=msg,
@@ -845,14 +858,16 @@ class BobsimoTimer:
 
         if response:  # If the user clicked 'Yes'
             # Start a new thread for the update process
-            update_thread = threading.Thread(target=self.update_app, args=(download_url,))
+            update_thread = threading.Thread(
+                target=self.update_app, args=(download_url,))
             update_thread.start()
 
     def update_app(self, download_url):
         """Download and install the new version."""
         try:
             # Download the installer to a temporary file
-            local_filename = download_url.split('/')[-1]  # Extract the file name from the URL
+            # Extract the file name from the URL
+            local_filename = download_url.split('/')[-1]
             print(f'Downloading to {local_filename}')
             with requests.get(download_url, stream=True) as r:
                 r.raise_for_status()
@@ -892,11 +907,14 @@ class BobsimoTimer:
     def _update_progress(self, downloaded, total):
         """Update progress (optional)."""
         percent = (downloaded / total) * 100 if total > 0 else 0
-        print(f"Downloaded: {downloaded} bytes, Total: {total} bytes, Progress: {percent:.2f}%",end='\r')
+        print(f"Downloaded: {downloaded} bytes, Total: {
+              total} bytes, Progress: {percent:.2f}%", end='\r')
+
 
 def main():
     """Main entry point for the application."""
     BMT2()
+
 
 if __name__ == "__main__":
     main()
