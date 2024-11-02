@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from gui_maker import topWindow
+from gui_maker import topWindow,Window
 import json
 from constants import app_icon, app_name, computer
 import pathlib
@@ -20,9 +20,11 @@ class Activity:
         self.duration_type = self.activity_info['dur_type']
         self.dur_type = self.duration_type
 
+        #NOTE: this is for the activity only mode
+        self.completed = False
+
     def __dict__(self):
         return self.activity_info
-
 
 class activitiesManager():
     """Every Toplevel class should have a parent from which it is
@@ -30,7 +32,7 @@ class activitiesManager():
     ACTS_PATH = pathlib.Path(
         f'{computer}\\Appdata\\Local\\BobsiMo Timer\\activities')
 
-    def __init__(self, caller):
+    def __init__(self, caller=None):
         """I am in charge of all things having to do with activities in this app"""
         self.caller = caller
         self.activities = self.get_activities()
@@ -294,6 +296,28 @@ button below to focus on',
         a = editActivity(self, act_obj, bt)
 
 
+class activitiesList(activitiesManager):
+    def __init__(self):
+        self.activities = self.get_activities()
+
+        # the activity for everyone to know
+        self.active = None
+
+    def show_act_gui(self):
+        """Show the gui"""
+        self.act_l_win = Window()
+        self.all_frame=tk.Frame(self.act_l_win)
+        self.all_frame.pack()
+        self.make_buttons(self.activities)
+        self.act_l_win.mainloop()
+
+    def make_button(self, label='activity for duration', act_obj=None):
+        self.active = act_obj
+        self.ActBt = tk.Checkbutton(self.all_frame, font=(
+            'sans-serif', 10), width=30, text=label)
+        self.ActBt.pack(pady=5)
+        return self.ActBt
+    
 class editActivity():
     def __init__(self, master, activity=None, caller=None):
         """The caller is just the button that initiated the edit"""
@@ -455,4 +479,4 @@ class editActivity():
 
 
 if __name__ == '__main__':
-    activitiesManager().show_act_gui()
+    activitiesList().show_act_gui()

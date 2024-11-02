@@ -1,11 +1,14 @@
-from plyer import notification
+import threading, subprocess,sys,ctypes
+from gui_maker import Message  # Replace with the actual import
+from plyer import notification  # Replace with the actual import
+import time
+
 from activity_manager import activitiesManager as AM, Activity as ACT
 from feedback_manager import sendFeedback
 from weblink import homePage
-from gui_maker import Window, appLayoutModifier
+from gui_maker import Window, appLayoutModifier, Message
 from profile_manager import profilesChooser
 from constants import *
-import requests
 
 # check for updates
 import requests
@@ -121,8 +124,8 @@ class BMT(countdownTimer, appLayoutModifier):
         self.bd_area = tk.Frame(self.all_frame)
         self.bd_area.pack(expand=True, fill='both')
 
-        self.act_area = tk.Frame(self.all_frame)
-        self.act_area.pack(expand=True, fill='both', side='bottom')
+        self.actions_area = tk.Frame(self.all_frame)
+        self.actions_area.pack(expand=True, fill='both', side='bottom')
         # ---------------------------------------------
 
         # BUTTONS----------------------------
@@ -132,7 +135,7 @@ class BMT(countdownTimer, appLayoutModifier):
                                     command=lambda: self.timer_win.wm_iconify())
         self.minimizeBt.pack(side='right')
 
-        self.actionBt = tk.Button(self.act_area,
+        self.actionBt = tk.Button(self.actions_area,
                                   text='I want to go on a break',
                                   font=('sans-serif', 20), command=self.pause)
         self.actionBt.pack()
@@ -144,7 +147,7 @@ class BMT(countdownTimer, appLayoutModifier):
         self.start_timer()
 
         self.timer_win.mainloop()
-# --------------------------------------------
+    # --------------------------------------------
 
     def gui_big_msg(self, msg="""
 Welcome to BMT :) """):
@@ -345,22 +348,28 @@ class BMT2(countdownTimer, appLayoutModifier):
         self.bd_area = tk.Frame(self.all_frame)
         self.bd_area.pack(expand=True, fill='both')
 
-        self.act_area = tk.Frame(self.all_frame)
-        self.act_area.pack(expand=True, fill='both', side='bottom')
+        self.actions_area = tk.Frame(self.all_frame)
+        self.actions_area.pack(expand=True, fill='both', side='bottom')
         # ---------------------------------------------
 
         # BUTTONS----------------------------
-        # self.Bt = tk.Button(self.act_area,
+        # self.Bt = tk.Button(self.actions_area,
         #                             text='Open my activities',
         #                             font=('sans-serif', 15),
         #                             command=lambda: self.actMan.show_gui())
         # self.minimizeBt.pack()
 
-        self.actionBt = tk.Button(self.act_area,
+        self.actionBt = tk.Button(self.actions_area,
                                   text=f'Select an activity to focus on',
                                   font=('sans-serif', 13),
                                   command=self.show_activities)
         self.actionBt.pack()
+
+        self.finishBt = tk.Button(self.actions_area,
+                                  text=f'Finish',
+                                  font=('sans-serif', 13),
+                                  command=self.stop_timer)
+        self.finishBt.pack()
         # ---------------------------------------------
         # self.timer_win.protocol('WM_DELETE_WINDOW', self.exit_protocol)
 
@@ -536,7 +545,7 @@ the activity: {self.activity.name}."""
             message=msg,
             app_name=app_name,
             app_icon=app_icon,
-            timeout=120
+            timeout=10
         )
 
     def timeup(self):
@@ -555,6 +564,16 @@ the activity: {self.activity.name}."""
         # NOTE: change the pause button to be to choose
         # a profile from a list of profiles again.
         # We don't the app to ever exit for parent mode
+    def stop_timer(self):
+        t = threading.Thread(target=self._stop_timer).start()
+
+    def _stop_timer(self):
+        """Stop the timer. This is run when
+        the user clicks on Finish button.
+        """
+        # XXX: this is the lazy way of doing it
+        if self.bg_timer_thread.is_alive():
+            self.bg_timer_thread.join()
 
     def resume(self):
         """Resume the timer"""
@@ -594,8 +613,9 @@ the activity: {self.activity.name}."""
         else:
             self.bg_task_thread.start()
 
-    def stop_timer(self):
-        """Stop the timer"""
+    def tasks_only_mode(self):
+        """A mode for just showing my tasks but in
+        a check box manner. for ticking it"""
 
     def check_for_updates(self, current_version):
         threading.Thread(name='updateCheck', target=lambda: self._check_for_updates(
@@ -613,14 +633,18 @@ the activity: {self.activity.name}."""
             # Parse the JSON response
             data = response.json()
             latest_version = data['latest_version']
-            download_url = data['download_url']
-            release_notes = data['release_notes']
+            self.download_url = data['download_url']
+            self.release_notes = data['release_notes']
 
             # Compare versions
             if latest_version > current_version:
-                print(f"Update available! Latest version: {latest_version}")
-                print(f"Release notes: {release_notes}")
-                print(f"Download here: {download_url}")
+                downloadnew = Message('OKCANCEL', f'Version {latest_version} Available', f"""\
+A new version of {app_name_only} is available.
+Would you like to download it now?""")
+
+                if downloadnew:
+                    self.update_app(self.download_url)
+
                 # You can also add code to prompt the user to download the update
             else:
                 print("You are using the latest version.")
@@ -629,12 +653,250 @@ the activity: {self.activity.name}."""
             print(f"Error checking for updates: {e}")
 
 
-def main():
-    # TODO: Make the window resizing to be responsive
-    # i.e. make the text be smaller when the window gets smaller
-    # TODO: reset the timer: take it back to "welcome"
-    BMT2()
+class BobsimoTimer:
+    url = "https://tech-naija-rise.github.io/BobsiMo-Timer/version.json"
+    def __init__(self):
+        self.activity = None
+        self.duration = 0
+        self.dur_type = ''
+        self.act_name = ''
+        self._pause = False
+        self.current_version = VERSION  # Your current version here
 
+        if not self.is_elevated():
+            self.relaunch_as_admin()  # Re-launch if not elevated
+        else:
+            self.check_for_updates()  # Start checking for updates
+        self.root.mainloop()  # Start the Tkinter event loop
+        self.check_for_updates()  # Start checking for updates
+        # Initialize your GUI components here
+
+    def is_elevated(self):
+        """Check if the script is running with elevated privileges."""
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+        
+    def relaunch_as_admin(self):
+        """Re-launch the application with admin privileges."""
+        print("Requesting administrator privileges...")
+        try:
+            # Construct the command to run the current script as admin
+            command = ['runas', '/user:Administrator', f'"{sys.executable}"'] + [f'"{arg}"' for arg in sys.argv]
+            subprocess.call(command)
+        except Exception as e:
+            print(f"Failed to relaunch as admin: {e}")
+        sys.exit()  # Exit the current instance
+
+
+    def GuiUpdateMsg(self, state: str):
+        """Update the main display message based on the state."""
+        states = {
+            'DEFAULT': self._default_state,
+            'RUNNING': self._running_state,
+            'BREAK': self._break_state,
+            'TIMEUP': self._timeup_state
+        }
+        
+        state = state.upper()
+        if state in states:
+            states[state]()
+
+    def _default_state(self):
+        """Set the default state message."""
+        self.WidgetFgChanger(self.bigMsgTxt, 'green')
+        self.WidgetTextChanger(self.bigMsgTxt, "What are you working on? :)")
+
+    def _running_state(self):
+        """Set the message for when the timer is running."""
+        self.WidgetFgChanger(self.bigMsgTxt, 'green')
+        message = (f"You have {self.duration} {self.dur_type.lower()} left to {self.act_name}."
+                    if self.activity and self.activity.duration 
+                    else f"You are now to {self.act_name}.")
+        self.WidgetTextChanger(self.bigMsgTxt, message)
+
+    def _break_state(self):
+        """Set the message for when the user is on a break."""
+        self.WidgetFgChanger(self.bigMsgTxt, 'red')
+        message = ("You are on a break."
+                   f" {self.duration} {self.dur_type} left."
+                   if self.activity and self.activity.duration 
+                   else "You are now on a break.")
+        self.WidgetTextChanger(self.bigMsgTxt, message)
+
+    def _timeup_state(self):
+        """Set the message for when the timer finishes."""
+        self.WidgetFgChanger(self.bigMsgTxt, 'blue')
+        message = "Congrats, you have finished your activity successfully."
+        self.WidgetTextChanger(self.bigMsgTxt, message)
+
+    def start_timer(self, name, act_obj):
+        """Start the timer for the given activity."""
+        self.activity = act_obj
+        self.act_name = act_obj.name
+        self.duration = int(act_obj.duration) if act_obj.duration else 0
+        self.dur_type = act_obj.dur_type
+
+        self._init_timer_threads(name)
+        self.WidgetTextChanger(self.actionBt, 'Take a break')
+        self.actionBt['command'] = self.pause
+
+        if self.activity and self.activity.duration:
+            self.bg_timer_thread.start()
+        else:
+            self.bg_task_thread.start()
+
+    def _init_timer_threads(self, name):
+        """Initialize the timer threads."""
+        self.bg_timer_thread = threading.Thread(
+            name=f'act with duration: {name}', 
+            target=self.timer
+        )
+        self.bg_task_thread = threading.Thread(
+            name=f'act only: {name}', 
+            target=self.task
+        )
+
+    def task(self, act_obj):
+        """Thread for tasks without a duration."""
+        self.act_name = act_obj.name
+        self.GuiUpdateMsg(state='RUNNING')
+        self.WidgetTextChanger(self.actionBt, 'Take a break')
+        self.actionBt['command'] = self.pause
+
+    def timer(self):
+        """Countdown timer logic."""
+        while self.duration > 0:
+            if not self._pause:
+                self.GuiUpdateMsg('RUNNING')
+                time.sleep(self._get_sleep_duration())
+                self.duration -= 1
+            else:
+                time.sleep(1)  # Check every second if paused
+        
+        self.timeup()
+
+    def _get_sleep_duration(self):
+        """Determine the sleep duration based on duration type."""
+        if 'minute' in self.dur_type.lower():
+            return 60
+        elif 'hour' in self.dur_type.lower():
+            return 3600
+        elif 'second' in self.dur_type.lower():
+            return 1
+
+    def notify(self):
+        """Notify the user that their time is up."""
+        msg = f"Congratulations, you have finished the activity: {self.activity.name}."
+        notification.notify(
+            title=f"{self.activity.name} is over",
+            message=msg,
+            app_name='Bobsimo Timer',
+            app_icon='path/to/icon.ico',  # Set your actual icon path
+            timeout=10
+        )
+
+    def timeup(self):
+        """Handle timer completion."""
+        self.GuiUpdateMsg("TIMEUP")
+        self.timer_win.bell()
+        self.WidgetTextChanger(self.actionBt, "Go to Activities")
+        self.actionBt['command'] = self.show_activities
+        self.notify()
+
+    def pause(self):
+        """Pause the timer."""
+        self._pause = True
+        self.GuiUpdateMsg('BREAK')
+        self.WidgetTextChanger(self.actionBt, 'Resume')
+        self.actionBt['command'] = self.resume
+
+    def resume(self):
+        """Resume the timer."""
+        self._pause = False
+        self.GuiUpdateMsg('RUNNING')
+        self.WidgetTextChanger(self.actionBt, 'Take a break')
+        self.actionBt['command'] = self.pause
+
+    def check_for_updates(self):
+        """Check if a new version is available."""
+        try:
+            response = requests.get(self.url)  # URL to your JSON file
+            response.raise_for_status()
+
+            data = response.json()
+            latest_version = data['latest_version']
+            self.download_url = data['download_url']
+            self.release_notes = data['release_notes']
+
+            if self.current_version < latest_version:
+                self._prompt_for_update(latest_version, self.download_url)
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error checking for updates: {e}")
+
+    def _prompt_for_update(self, latest_version, download_url):
+        """Prompt the user to update the app."""
+        response = messagebox.askyesno(
+            title=f'Version {latest_version} Available',
+            message=f"A new version of Bobsimo Timer is available. Would you like to download it now?"
+        )
+
+        if response:  # If the user clicked 'Yes'
+            # Start a new thread for the update process
+            update_thread = threading.Thread(target=self.update_app, args=(download_url,))
+            update_thread.start()
+
+    def update_app(self, download_url):
+        """Download and install the new version."""
+        try:
+            # Download the installer to a temporary file
+            local_filename = download_url.split('/')[-1]  # Extract the file name from the URL
+            print(f'Downloading to {local_filename}')
+            with requests.get(download_url, stream=True) as r:
+                r.raise_for_status()
+                with open(local_filename, 'wb') as f:
+                    total_length = int(r.headers.get('content-length', 0))
+                    for chunk in r.iter_content(chunk_size=8192):
+                        if chunk:  # filter out keep-alive new chunks
+                            f.write(chunk)
+                            self._update_progress(len(chunk), total_length)
+
+            print(f"Downloaded update: {local_filename}")
+            self.run_installer(local_filename)
+
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to download the update: {e}")
+
+    def run_installer(self, installer_path):
+        """Run the installer silently."""
+        try:
+            print(f"Installing {installer_path}...")
+            # Example of a silent install command for NSIS
+            subprocess.run([installer_path, '/S'], check=True)
+            print("Installation completed successfully.")
+
+            # Ask the user to restart the application
+            if messagebox.askyesno("Restart Required", "The application needs to restart to apply the update. Restart now?"):
+                self.restart_application()
+
+        except subprocess.CalledProcessError as e:
+            print(f"Installation failed: {e}")
+
+    def restart_application(self):
+        """Restart the application."""
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
+    def _update_progress(self, downloaded, total):
+        """Update progress (optional)."""
+        percent = (downloaded / total) * 100 if total > 0 else 0
+        print(f"Downloaded: {downloaded} bytes, Total: {total} bytes, Progress: {percent:.2f}%",end='\r')
+
+def main():
+    """Main entry point for the application."""
+    BMT2()
 
 if __name__ == "__main__":
     main()

@@ -1,9 +1,10 @@
-"""BobsiMo Timer: A simple timer app to manage your kids computer time
+"""BobsiMo Timer: A simple timer app to manage  time
 
 """
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import json
 import pathlib
 from tkinter import messagebox
@@ -12,8 +13,8 @@ import threading
 import time
 
 __all__ = ['app_icon',
-             'tk','time','json', 'pathlib', 'threading', 'messagebox', 'os',
-               'ScrolledText', 'app_name', 'VERSION','computer']
+             'tk','ttk','time','json', 'pathlib', 'threading', 'messagebox', 'os',
+               'ScrolledText', 'app_name', 'VERSION','computer', 'app_name_only']
 
 
 VERSION = "1.3.5"

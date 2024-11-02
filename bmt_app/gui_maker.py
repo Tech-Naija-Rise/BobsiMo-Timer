@@ -1,9 +1,9 @@
 import tkinter as tk
-from tkinter.commondialog import Dialog
+from tkinter.messagebox import *
 from constants import *
 
 
-#DEV only
+# DEV only
 class appLayoutModifier:
     def AreaMaker(self, where=None):
         fr = tk.Frame(where)
@@ -56,6 +56,7 @@ class appLayoutModifier:
         any_window.wm_geometry(f"{self.win_width}x{
             self.win_height}+{self.win_x}+{self.win_y}")
 
+
 class Window(tk.Tk):
     def __init__(self, screenName=None, baseName=None, className="Tk", useTk=True, sync=False, use=None):
         super().__init__(screenName, baseName, className, useTk, sync, use)
@@ -79,9 +80,38 @@ class Window(tk.Tk):
             self.win_height}+{self.win_x}+{self.win_y}")
 
 
-class Messages(Dialog):
-    def __init__(self, master=None, **options):
-        super().__init__(master, **options)
+class Message():
+    """Display a messagebox with a title and a message"""
+
+    def __init__(self, type_, title, msg):
+        """Display a message with the type being one of:
+
+        1. YESNO
+        2. YESNOCANCEL
+        3. QUESTION
+        4. OKCANCEL
+        5. ERROR
+        6. INFO
+        7. WARNING
+
+
+        """
+        if type_ == 'YESNO':
+            askyesno(title, msg)
+        elif type_ == 'YESNOCANCEL':
+            askyesnocancel(title, msg)
+        elif type_ == 'QUESTION':
+            askquestion(title, msg)
+        elif type_ == 'OKCANCEL':
+            askokcancel(title, msg)
+        elif type_ == 'ERROR':
+            showerror(title, msg)
+        elif type_ == 'INFO':
+            showinfo(title, msg)
+        elif type_ == 'WARNING':
+            showwarning(title, msg)
+        else:
+            raise TypeError('no such type of message')
 
 
 class topWindow(tk.Toplevel):
