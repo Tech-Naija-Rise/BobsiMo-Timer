@@ -36,7 +36,6 @@
 # print(f'image is now in {app_folder}')
 
 
-
 # # make a folder in which all versions will stay
 # print('making FINAL folder where all versions will stay')
 # final_dir = pathlib.Path('..\\PROD2\\FINAL')
@@ -49,7 +48,7 @@
 # # with the version name
 # print(f'moving the app folder {app_folder.stem} to FINAL')
 # a = shutil.move(app_folder, f'{final_dir}\\{VERSION}\\{app_name}')
-# print(f'moved to {a}') 
+# print(f'moved to {a}')
 
 # # # FINALLY TAKE THE *IMAGES* REQUIRED FOR COMPILATION
 # # img1 = pathlib.Path('.\\BMT_logo.ico')
@@ -67,39 +66,61 @@
 import os
 import shutil
 import pathlib
-from bmt_app.bmt1 import app_icon,app_name,app_name_only,VERSION
+from bmt_app.constants import app_name, app_name_only, VERSION
 
 # Command to create the executable
-build_command = f'''\ 
-pyinstaller --noconfirm --add-data "./BMT_logo.png;./appdata/imgs" \
---noconsole -n "{app_name_only}" -i "BMT_logo.png" --hidden-import "plyer" \
-./bmt_app/bmt1.py
-'''
-
-print('[x] The app has not been created yet, please make the app first.')
-print("Making the app...\n", build_command)
-os.system(build_command)
+build_command = f"""\
+pyinstaller --noconfirm --add-data "./BMT_logo.ico;./appdata/imgs" \
+--noconsole -n "{app_name_only}" --hidden-import=plyer.platforms.win.notification --hidden-import=requests \
+-i "BMT_logo.ico" ./bmt_app/bmt1.py"""
+try:
+    print('[x] The app has not been created yet, please make the app first.')
+    print("Making the app...\n", build_command)
+    os.system(build_command)
+except Exception as e:
+    print(e)
 
 # Define the path to the built app folder
-app_folder = pathlib.Path(f'./dist/{app_name_only}')
+try:
+    os.makedirs(f'./dist/{app_name_only}')
+except FileExistsError:
+    pass
+app_folder = pathlib.Path(f'./dist/{app_name_only}/')
 print(f'Done making app... in ({app_folder})')
 
 # Copy the icon into the app folder
-print('Putting icon into app folder...')
-app_icon_img1 = pathlib.Path('./BMT_logo.ico')
-shutil.copy(app_icon_img1, app_folder)
-print(f'Image is now in {app_folder}')
+try:
+    print('Putting icon into app folder...')
+    app_icon_img1 = pathlib.Path('./BMT_logo.ico')
+    shutil.copy(app_icon_img1, app_folder)
+    print(f'Image is now in {app_folder}')
+except Exception as e:
+    print(e)
+
 
 # Create the final directory for versions
-final_dir = pathlib.Path('../PROD2/FINAL')
-print('Making FINAL folder where all versions will stay...')
-final_dir.mkdir(parents=True, exist_ok=True)  # Create if it doesn't exist
+try:
+    final_dir = pathlib.Path('../PROD2/FINAL')
+    print('Making FINAL folder where all versions will stay...')
+    final_dir.mkdir(parents=True, exist_ok=True)  # Create if it doesn't exist
+except Exception as e:
+    print(e)
 
 # Move the app folder to the new prod folder with the version name
-print(f'Moving the app folder {app_folder.stem} to FINAL...')
-destination = final_dir / VERSION / app_name
-shutil.move(app_folder, destination)
-print(f'Moved to {destination}')
+try:
+    print(f'Moving the app folder {app_folder.stem} to FINAL...')
+    destination = final_dir / VERSION / app_name
+    shutil.move(app_folder, destination)
+    print(f'Moved to {destination}')
+except Exception as e:
+    print(e)
+
+# change the version file to be hosted
+# push it to github
+# version_file = pathlib.Path('./version.json')
+# with open(version_file, 'w') as vers:
+#     vers.wr
+
 
 # Optionally, copy any additional images required for compilation
 # Uncomment the following lines if needed

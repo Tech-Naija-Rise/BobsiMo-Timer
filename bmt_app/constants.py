@@ -11,13 +11,14 @@ from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 import threading
 import time
+from plyer import notification
 
-__all__ = ['app_icon',
+__all__ = ['app_icon','app_logo',
              'tk','ttk','time','json', 'pathlib', 'threading', 'messagebox', 'os',
                'ScrolledText', 'app_name', 'VERSION','computer', 'app_name_only']
 
 
-VERSION = "1.3.5"
+VERSION = "1.4.0"
 
 app_name_only = "BobsiMo Timer"
 app_name = f"{app_name_only} {VERSION}"
@@ -31,7 +32,7 @@ app_icon = "./_internal/appdata/imgs/BMT_logo.ico"
 #  but comment out before production
 # DEV
 app_icon = "BMT_logo.ico"
-
+app_logo = "BMT_logo.png"
 
 # this is for debugging purpose
 # try:

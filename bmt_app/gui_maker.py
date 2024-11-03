@@ -83,7 +83,7 @@ class Window(tk.Tk):
 class Message():
     """Display a messagebox with a title and a message"""
 
-    def __init__(self, type_, title, msg):
+    def __init__(self, type_, title, msg, parent = None):
         """Display a message with the type being one of:
 
         1. YESNO
@@ -97,19 +97,19 @@ class Message():
 
         """
         if type_ == 'YESNO':
-            askyesno(title, msg)
+            askyesno(title, msg, parent=parent)
         elif type_ == 'YESNOCANCEL':
-            askyesnocancel(title, msg)
+            askyesnocancel(title, msg, parent=parent)
         elif type_ == 'QUESTION':
-            askquestion(title, msg)
+            askquestion(title, msg, parent=parent)
         elif type_ == 'OKCANCEL':
-            askokcancel(title, msg)
+            askokcancel(title, msg, parent=parent)
         elif type_ == 'ERROR':
-            showerror(title, msg)
+            showerror(title, msg, parent=parent)
         elif type_ == 'INFO':
-            showinfo(title, msg)
+            showinfo(title, msg, parent=parent)
         elif type_ == 'WARNING':
-            showwarning(title, msg)
+            showwarning(title, msg, parent=parent)
         else:
             raise TypeError('no such type of message')
 

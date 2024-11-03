@@ -1,11 +1,11 @@
+
+import os
 import threading
 import subprocess
 import sys
 import ctypes
-from gui_maker import Message  # Replace with the actual import
-from plyer import notification  # Replace with the actual import
+from app_update_checker import Updater
 import time
-
 from activity_manager import activitiesManager as AM, Activity as ACT
 from feedback_manager import sendFeedback
 from weblink import homePage
@@ -13,7 +13,10 @@ from gui_maker import Window, appLayoutModifier, Message
 from profile_manager import profilesChooser
 from constants import *
 
-# check for updates
+# hidden imports
+from plyer import notification  # Replace with the actual import
+import plyer.platforms.win.notification
+
 import requests
 
 
@@ -289,7 +292,27 @@ class BMT2(countdownTimer, appLayoutModifier):
         self.finished = False
 
         super().__init__(self.duration)
+
         self.show_gui()
+
+    def APP_DEMO(self, type_='Welcome'):
+        """Guide the user through the app and bring out 
+        information boxes to guide them within the app"""
+
+        # when the app starts,
+        Message('INFO', "Hi, Welcome to BMT", f"""\
+Welcome,
+I am excited to show you around :D
+
+Let's set things up for you so you can quickly
+begin working with the focus you need""", self.timer_win)
+
+        Message('INFO', "Create an activity (task) to do", f"""\
+You can go ahead to click on the
+" SELECT ACTIVITY " button to choose one thing to focus on.""", self.timer_win)
+
+    def destroy(self):
+        self.timer_win.destroy()
 
     def show_activities(self):
         """show the activities as choosable buttons"""
@@ -310,7 +333,7 @@ class BMT2(countdownTimer, appLayoutModifier):
                              command=lambda: sendFeedback(self))
         helpmenu.add_separator()
         helpmenu.add_command(label="Check for Updates",
-                             command=lambda: self.check_for_updates(VERSION))
+                             command=lambda: self.check_for_updates())
 
         self.menubar.add_cascade(label='Activities', menu=activities)
         self.menubar.add_cascade(label='Help', menu=helpmenu)
@@ -321,26 +344,25 @@ class BMT2(countdownTimer, appLayoutModifier):
         """Center the window on screen"""
         any_window.update()
 
-        self.screen_width = any_window.winfo_screenwidth()
-        self.screen_height = any_window.winfo_screenheight()
+        self.screen_width = 600
+        self.screen_height = 300
         self.win_width = self.screen_width//2
         self.win_height = self.screen_height//2
 
-        self.win_x = (self.screen_width//2) - (self.win_width//2)
-        self.win_y = (self.screen_height//2) - (self.win_height//2)
+        self.win_x = ((self.screen_width) - (self.win_width))//2
+        self.win_y = ((self.screen_height) - (self.win_height))//2
 
-        any_window.wm_geometry(f"{self.win_width}x{
-            self.win_height}+{self.win_x}+{self.win_y}")
+        any_window.wm_geometry(f"600x300+{self.win_x}+{self.win_y}")
 
     def show_gui(self, window_name='BobsiMo Timer', window_icon=app_icon):
         self.MSG_SIZE = 50
         self.timer_win = Window()
 
         self.timer_win.title(window_name)
+        self.timer_win.iconbitmap(window_icon)
+        self.__center_window(self.timer_win)
 
         self.menu()
-
-        self.timer_win.iconbitmap(window_icon)
 
         # self.timer_win.state('zoomed')
 
@@ -355,7 +377,7 @@ class BMT2(countdownTimer, appLayoutModifier):
         self.bd_area.pack(expand=True, fill='both')
 
         self.actions_area = tk.Frame(self.all_frame)
-        self.actions_area.pack(expand=True, fill='both', side='bottom')
+        self.actions_area.pack(expand=True, side='bottom')
         # ---------------------------------------------
 
         # BUTTONS----------------------------
@@ -366,16 +388,16 @@ class BMT2(countdownTimer, appLayoutModifier):
         # self.minimizeBt.pack()
 
         self.actionBt = tk.Button(self.actions_area,
-                                  text=f'Select an activity to focus on',
+                                  text=f'Select Activity',
                                   font=('sans-serif', 13),
                                   command=self.show_activities)
-        self.actionBt.pack()
+        self.actionBt.pack(side='left', padx=10)
 
         self.finishBt = tk.Button(self.actions_area,
-                                  text=f'Finish',
+                                  text=f'Finish Activity',
                                   font=('sans-serif', 13),
                                   command=self.stop_timer)
-        self.finishBt.pack()
+        self.finishBt.pack(side='right')
         # ---------------------------------------------
         # self.timer_win.protocol('WM_DELETE_WINDOW', self.exit_protocol)
 
@@ -386,6 +408,8 @@ class BMT2(countdownTimer, appLayoutModifier):
         # packing of its children
         # self.__center_window(self.timer_win)
         self.timer_win.bind('<Configure>', self.responsive_adjust)
+
+        self.APP_DEMO()
         self.timer_win.mainloop()
 # --------------------------------------------
 
@@ -494,6 +518,10 @@ your activity succesfully""")
 Congrats, You have finished
 your activity succesfully""")
 
+    #get states of the app
+    def getBigMsg(self):
+        return self.bigMsgTxt['text']
+
     def __count_words(self):
         """internal function to count words"""
         pass
@@ -543,14 +571,12 @@ your activity succesfully""")
                 self.timeup()
                 break
 
-    def notify(self):
-        """Notify the user that his time is up"""
-        msg = f"""\
-Congratulations, you have finished
-the activity: {self.activity.name}."""
+    def notify(self, title, msg):
+        """Notify the user about something."""
+        msg = msg
 
         notification.notify(
-            title=f"{self.activity.name} is over",
+            title=title,
             message=msg,
             app_name=app_name,
             app_icon=app_icon,
@@ -559,16 +585,24 @@ the activity: {self.activity.name}."""
 
     def timeup(self):
         """What happens when the timer finishes"""
+        #check the message is not already TIMEUP
+
         self.GuiUpdateMsg("TIMEUP")
 
         self.timer_win.bell()
 
-        self.WidgetTextChanger(self.actionBt, f"Go to Activities")
+        self.WidgetTextChanger(self.actionBt, f"Select Activity")
         self.actionBt['command'] = self.show_activities
+
         try:
-            self.notify()
+            self.notify(f"{self.activity.name} is over", f"""\
+Congratulations, you have finished
+your activity: {self.activity.name}.""")
+
         except Exception:
-            pass
+            Message('INFO', 'Activity is now over', f"""\
+Congratulations, you have finished
+your activity: {self.activity.name}.""")
 
         # NOTE: change the pause button to be to choose
         # a profile from a list of profiles again.
@@ -627,41 +661,11 @@ the activity: {self.activity.name}."""
     def tasks_only_mode(self):
         """A mode for just showing my tasks but in
         a check box manner. for ticking it"""
+        # just do the app experience flow
 
-    def check_for_updates(self, current_version):
-        threading.Thread(name='updateCheck', target=lambda: self._check_for_updates(
-            current_version)).start()
-
-    def _check_for_updates(self, current_version):
-        # URL to your version.json file
-        url = "https://tech-naija-rise.github.io/BobsiMo-Timer/version.json"
-
-        try:
-            # Fetch the JSON data
-            response = requests.get(url)
-            response.raise_for_status()  # Raise an error for bad responses
-
-            # Parse the JSON response
-            data = response.json()
-            latest_version = data['latest_version']
-            self.download_url = data['download_url']
-            self.release_notes = data['release_notes']
-
-            # Compare versions
-            if latest_version > current_version:
-                downloadnew = Message('OKCANCEL', f'Version {latest_version} Available', f"""\
-A new version of {app_name_only} is available.
-Would you like to download it now?""")
-
-                if downloadnew:
-                    self.update_app(self.download_url)
-
-                # You can also add code to prompt the user to download the update
-            else:
-                print("You are using the latest version.")
-
-        except requests.exceptions.RequestException as e:
-            print(f"Error checking for updates: {e}")
+    def check_for_updates(self):
+        """Start the process of updating the app"""
+        self.updater = Updater(self, VERSION)
 
 
 class BobsimoTimer:
