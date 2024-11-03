@@ -88,19 +88,27 @@ except FileExistsError:
 app_folder = pathlib.Path(f'./dist/{app_name_only}/')
 print(f'Done making app... in ({app_folder})')
 
+final_dir = pathlib.Path('../PROD2/FINAL')
 # Copy the icon into the app folder
 try:
     print('Putting icon into app folder...')
     app_icon_img1 = pathlib.Path('./BMT_logo.ico')
+    app_icon_img2= pathlib.Path('./BMT_logo.png')
+
     shutil.copy(app_icon_img1, app_folder)
-    print(f'Image is now in {app_folder}')
+    shutil.copy(app_icon_img1, final_dir / VERSION)
+    shutil.copy(app_icon_img2, final_dir / VERSION)
+    shutil.copy(app_icon_img2, app_folder)
+
+    print(f'Image {app_icon_img1} is now in {app_folder}')
+    print(f'Image {app_icon_img2} is now in {app_folder}')
+
 except Exception as e:
     print(e)
 
 
 # Create the final directory for versions
 try:
-    final_dir = pathlib.Path('../PROD2/FINAL')
     print('Making FINAL folder where all versions will stay...')
     final_dir.mkdir(parents=True, exist_ok=True)  # Create if it doesn't exist
 except Exception as e:
