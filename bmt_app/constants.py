@@ -18,7 +18,7 @@ __all__ = ['app_icon','app_logo',
                'ScrolledText', 'app_name', 'VERSION','computer', 'app_name_only']
 
 
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 
 app_name_only = "BobsiMo Timer"
 app_name = f"{app_name_only} {VERSION}"
