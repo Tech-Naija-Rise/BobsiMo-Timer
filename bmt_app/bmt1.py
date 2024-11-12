@@ -6,10 +6,10 @@ import sys
 import ctypes
 from app_update_checker import Updater
 import time
-from activity_manager import activitiesManager as AM, Activity as ACT
+from activity_manager import activitiesManager as AM, Activity as ACT, activitiesList as AL
 from feedback_manager import sendFeedback
 from weblink import homePage
-from gui_maker import Window, appLayoutModifier, Message
+from gui_maker import Ask,Window, appLayoutModifier, Message, Button, modernButton
 from profile_manager import profilesChooser
 from constants import *
 
@@ -135,13 +135,13 @@ class BMT(countdownTimer, appLayoutModifier):
         # ---------------------------------------------
 
         # BUTTONS----------------------------
-        self.minimizeBt = tk.Button(self.top_frame,
+        self.minimizeBt = Button(self.top_frame,
                                     text='Minimize Window',
                                     font=('sans-serif', 15),
                                     command=lambda: self.timer_win.wm_iconify())
         self.minimizeBt.pack(side='right')
 
-        self.actionBt = tk.Button(self.actions_area,
+        self.actionBt = Button(self.actions_area,
                                   text='I want to go on a break',
                                   font=('sans-serif', 20), command=self.pause)
         self.actionBt.pack()
@@ -295,7 +295,7 @@ class BMT2(countdownTimer, appLayoutModifier):
 
         self.show_gui()
 
-    def APP_DEMO(self, type_='Welcome'):
+    def APP_DEMO(self):
         """Guide the user through the app and bring out 
         information boxes to guide them within the app"""
 
@@ -310,12 +310,15 @@ begin working with the focus you need""", self.timer_win)
         Message('INFO', "Create an activity (task) to do", f"""\
 You can go ahead to click on the
 " SELECT ACTIVITY " button to choose one thing to focus on.""", self.timer_win)
+        self.actionBt['bg'] = '#1f2'
+
 
     def destroy(self):
         self.timer_win.destroy()
 
     def show_activities(self):
         """show the activities as choosable buttons"""
+        self.actionBt['bg'] = '#eee'
         AM(self).show_act_gui()
 
     def menu(self):
@@ -381,19 +384,19 @@ You can go ahead to click on the
         # ---------------------------------------------
 
         # BUTTONS----------------------------
-        # self.Bt = tk.Button(self.actions_area,
+        # self.Bt = Button(self.actions_area,
         #                             text='Open my activities',
         #                             font=('sans-serif', 15),
         #                             command=lambda: self.actMan.show_gui())
         # self.minimizeBt.pack()
 
-        self.actionBt = tk.Button(self.actions_area,
+        self.actionBt = Button(self.actions_area,
                                   text=f'Select Activity',
                                   font=('sans-serif', 13),
                                   command=self.show_activities)
         self.actionBt.pack(side='left', padx=10)
 
-        self.finishBt = tk.Button(self.actions_area,
+        self.finishBt = Button(self.actions_area,
                                   text=f'Finish Activity',
                                   font=('sans-serif', 13),
                                   command=self.stop_timer)
@@ -409,7 +412,6 @@ You can go ahead to click on the
         # self.__center_window(self.timer_win)
         self.timer_win.bind('<Configure>', self.responsive_adjust)
 
-        self.APP_DEMO()
         self.timer_win.mainloop()
 # --------------------------------------------
 
@@ -657,15 +659,42 @@ your activity: {self.activity.name}.""")
             self.bg_timer_thread.start()
         else:
             self.bg_task_thread.start()
+    
+    def check_for_updates(self):
+        """Start the process of updating the app"""
+        self.updater = Updater(self, VERSION)
 
     def tasks_only_mode(self):
         """A mode for just showing my tasks but in
         a check box manner. for ticking it"""
         # just do the app experience flow
+        self.al = AL().show_act_gui()
 
-    def check_for_updates(self):
-        """Start the process of updating the app"""
-        self.updater = Updater(self, VERSION)
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class BobsimoTimer:

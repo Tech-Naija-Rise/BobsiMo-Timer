@@ -1,5 +1,5 @@
 from constants import *
-from gui_maker import appLayoutModifier
+from gui_maker import appLayoutModifier,Button
 
 class profileViewer(appLayoutModifier):
     def __init__(self) -> None:
@@ -56,7 +56,7 @@ class profilesCreator(appLayoutModifier, tk.Toplevel):
         self.actions_area = tk.Frame(self.all_frame)
         self.actions_area.pack(side='bottom', fill='x', expand=1)
 
-        self.createBt = tk.Button(self.actions_area,
+        self.createBt = Button(self.actions_area,
                                   text="Create Profile",
                                   font=('sans-serif', 10),
                                   command=self.create_profile)
@@ -177,7 +177,7 @@ Choose your profile to continue from where you stopped."""):
         self.profiles_actions_area = tk.Frame(self.profiles_area)
         self.profiles_actions_area.pack(expand=1)
 
-        self.startBt = tk.Button(self.profiles_actions_area,
+        self.startBt = Button(self.profiles_actions_area,
                                  bg='#1f2',
                                  font=('sans-serif', 20),
                                  text="Start Timer")
@@ -202,7 +202,7 @@ There are no profiles. Please create one on the right."""):
     def make_profile_bt(self, name: str, position):
         """Make a single profile button .
         `position` parameter is for arrangement purposes"""
-        self.profileBt = tk.Button(self.profiles_bt_area,
+        self.profileBt = Button(self.profiles_bt_area,
                                    text=name.title(),
                                    font=('sans-serif', 15),
                                    command=lambda:
@@ -229,7 +229,7 @@ Can't find your name?"""):
             text=head_text, fg='#aaa', font=('sans-serif', 20))
         self.profileCreateSubtitle.pack()
 
-        self.profileCreateBt = tk.Button(self.profile_create_area, text="""\
+        self.profileCreateBt = Button(self.profile_create_area, text="""\
 Create your profile""", font=('sans-serif', 10),
             command=self.launch_profile_creator)
         self.profileCreateBt.pack()
@@ -248,7 +248,7 @@ how much time you have left""", bg='#ddd', fg='#555'):
                                               bg=bg, fg=fg)
         self.profileInfoViewerText.pack(expand=1)
 
-        self.seeDetailsBt = tk.Button(self.profile_info_viewer_area,
+        self.seeDetailsBt = Button(self.profile_info_viewer_area,
                                       text='See Details', state='disabled')
         self.seeDetailsBt.pack(expand=1)
 
@@ -391,7 +391,7 @@ how much time you have left""", bg='#ddd', fg='#555'):
         self.actions_area = tk.Frame(self.all_frame)
         self.actions_area.pack(side='bottom', fill='x', expand=1)
 
-        self.createBt = tk.Button(self.actions_area,
+        self.createBt = Button(self.actions_area,
                                   text="Create Profile",
                                   font=('sans-serif', 10),
                                   command=self.create_profile)

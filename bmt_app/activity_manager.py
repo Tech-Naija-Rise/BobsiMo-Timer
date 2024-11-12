@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from gui_maker import topWindow,Window
+from gui_maker import topWindow,Window,Button, Message
 import json
 from constants import app_icon, app_name, computer
 import pathlib
@@ -56,16 +56,6 @@ class activitiesManager():
         self.duration = self.active.duration
         self.dur_type = self.active.dur_type
 
-        # NOTE: be sure to put a confirmation
-        # but why?
-
-        # why is it that the timer should not allow multiple
-        # timers?
-        # I am falling into the mistake of
-        # thinking of only myself while making
-        # something for people. WHY?
-
-        # if the
 
         self.caller.activity = act_obj
         self.caller.start_timer(self.act_name, act_obj)
@@ -151,6 +141,11 @@ You will now {act_obj.name}"""
         with open(f'{self.ACTS_PATH}\\activities.json', 'w') as acts_:
             json.dump(a, acts_)
 
+    def APP_DEMO(self):
+        Message("INFO", "Create an Activity", f"""\
+You can add a new activity by going
+to do "Edit" menu on the top left""")
+
     def show_act_gui(self):
         """Either show gui as a toplevel with a parent window
         or show it as a standalone window.
@@ -158,6 +153,7 @@ You will now {act_obj.name}"""
         window (or class)"""
 
         self.act_win = topWindow(self.caller.timer_win)
+        
 
         self.menubar = tk.Menu(self.act_win,tearoff=0)
 
@@ -188,6 +184,7 @@ You will now {act_obj.name}"""
         self.gui_main_elements()
         self.gui_actions_elements()
         # self.__position_window(self.act_win)
+        self.APP_DEMO()
         self.act_win.mainloop()
 
     def __position_window(self, any_window):
@@ -238,7 +235,7 @@ button below to focus on',
 
     def gui_actions_elements(self):
         """The area where the actions stay"""
-        self.startBt = tk.Button(self.bottomframe,
+        self.startBt = Button(self.bottomframe,
                                  bg='#1a2',
                                  font=('sans-serif', 15),
                                  text="Start Timer")
@@ -259,7 +256,7 @@ button below to focus on',
 
         """
         self.active = act_obj
-        self.ActBt = tk.Button(self.actsframe, font=(
+        self.ActBt = Button(self.actsframe, font=(
             'sans-serif', 10), width=30, text=label,
             command=lambda: self.select_activity(act_obj, self.ActBt))
         self.ActBt.pack(pady=5)
@@ -328,7 +325,16 @@ class editActivity():
         self.activity = activity
 
         self.show_gui(self.activity)
-
+    def APP_DEMO(self):
+        """App process"""
+        Message("INFO", "Create an Activity",f"""\
+The activity title should be short and clear
+like: "analyze dataset" """)
+        Message("INFO", "No limit",f"""\
+When you don't know how long your activity is going to take,
+you can ignore setting a duration by
+TICKING THE "No Time Limit" checkbox 
+""")
     def show_gui(self, info=None):
         self.edit_win = topWindow(self.master)
 
@@ -414,7 +420,7 @@ class editActivity():
         self.actions_area = tk.Frame(self.all_frame)
         self.actions_area.pack(side='bottom', fill='x', expand=1)
 
-        self.saveBt = tk.Button(self.actions_area,
+        self.saveBt = Button(self.actions_area,
                                 text="Save Activity",
                                 font=('sans-serif', 15),
                                 command=lambda: self.save_profile(self.main))
@@ -424,6 +430,7 @@ class editActivity():
         self.pack_info = self.formLabel2.pack_info()
         self.pack_info.pop('in')
         self.gui_no_limit()
+        self.APP_DEMO()
 
     def gui_no_limit(self):
         """What to do when the "No time limit" box is checked or unchecked"""

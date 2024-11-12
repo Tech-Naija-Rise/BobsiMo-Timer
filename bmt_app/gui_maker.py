@@ -1,9 +1,12 @@
 import tkinter as tk
 from tkinter.messagebox import *
 from constants import *
-
+import customtkinter as ctk
+from tkinter.simpledialog import askfloat, askstring, askinteger
 
 # DEV only
+
+
 class appLayoutModifier:
     def AreaMaker(self, where=None):
         fr = tk.Frame(where)
@@ -58,8 +61,9 @@ class appLayoutModifier:
 
 
 class Window(tk.Tk):
-    def __init__(self, screenName=None, baseName=None, className="Tk", useTk=True, sync=False, use=None):
-        super().__init__(screenName, baseName, className, useTk, sync, use)
+    def __init__(self):
+        super().__init__()
+        self.wm_title(f'{app_name_only}')
         self.wm_iconbitmap(app_icon)
         self.tk_setPalette('#eee')
 
@@ -80,10 +84,21 @@ class Window(tk.Tk):
             self.win_height}+{self.win_x}+{self.win_y}")
 
 
+class Notebook(ttk.Notebook):
+    def __init__(self, master=None):
+        super().__init__(master,)
+
+
+class panedWindow(tk.PanedWindow):
+    def __init__(self, parent, **options):
+        self.options = options
+        super().__init__(parent, **self.options)
+
+
 class Message():
     """Display a messagebox with a title and a message"""
 
-    def __init__(self, type_, title, msg, parent = None):
+    def __init__(self, type_, title, msg, parent=None):
         """Display a message with the type being one of:
 
         1. YESNO
@@ -114,6 +129,30 @@ class Message():
             raise TypeError('no such type of message')
 
 
+class Ask():
+    def __init__(self, type_='', title='', question='', placeholder=None):
+        """Bring up the dialog to ask the user for input
+        1. STRING
+        2. INTEGER
+        3. FLOAT
+        """
+        self.answer = None
+        if type_ == 'FLOAT':
+            self.answer = askfloat(
+                title=title, initialvalue=placeholder, prompt=question)
+        elif type_ == 'STRING':
+            self.answer = askstring(
+                title=title, initialvalue=placeholder, prompt=question)
+        elif type_ == 'INTEGER':
+            self.answer = askinteger(
+                title=title, initialvalue=placeholder, prompt=question)
+        else:
+            raise Exception('no such dialog')
+
+    def __str__(self):
+        return f'{self.answer}'
+
+
 class topWindow(tk.Toplevel):
     """A window that is going to stay 
     always on top. e.g. for dialogs..."""
@@ -142,13 +181,91 @@ class topWindow(tk.Toplevel):
             self.win_height}+{self.win_x}+{self.win_y}")
 
 
+class Style(ttk.Style):
+    def __init__(self, master):
+        super().__init__(master)
+
+
 class Button(tk.Button):
-    pass
+    def __init__(self, parent, **options):
+
+        self.parent = parent
+        self.options = options
+
+        # default settings
+        self.options.setdefault('font', ('sans-serif', 10))
+        self.options.setdefault('relief', 'ridge')
+        self.options.setdefault('bg', '#eee')
+        # self.options.setdefault('bd',)
+
+        super().__init__(self.parent, **self.options)
+
+    def show(self, side='left', side_padding=5, updownpadding=0):
+        self.pack(side=side, padx=side_padding, pady=updownpadding)
 
 
-class Frame(tk.Frame):
-    pass
+class tickBox(tk.Checkbutton):
+    def __init__(self, parent=None, **options):
+        self.parent = parent
+        self.options = dict(options)
+        self.options.setdefault('relief', 'flat')
+        self.options.setdefault('bd')
+        super().__init__(self.parent, **self.options)
+
+
+class modernButton(ctk.CTkButton):
+    def __init__(self, master, width=140, height=28, corner_radius=None, border_width=None, border_spacing=2, bg_color="transparent", fg_color=None, hover_color=None, border_color=None, text_color=None, text_color_disabled=None, background_corner_colors=None, round_width_to_even_numbers=True, round_height_to_even_numbers=True, text="CTkButton", font=None, textvariable=None, image=None, state="normal", hover=True, command=None, compound="left", anchor="center", **kwargs):
+        super().__init__(master, width, height, corner_radius, border_width, border_spacing, bg_color, fg_color, hover_color, border_color, text_color, text_color_disabled,
+                         background_corner_colors, round_width_to_even_numbers, round_height_to_even_numbers, text, font, textvariable, image, state, hover, command, compound, anchor, **kwargs)
+
+
+class Area(tk.Frame):
+    def __init__(self, parent=None, **kw):
+        super().__init__(master=parent, **kw)
+
+    def show(self):
+        self.pack()
+
+
+class Label(tk.Label):
+    def __init__(self, master=None, **kw):
+        super().__init__(master, **kw)
+
+    def show(self):
+        self.pack()
+
+
+class countBox(tk.Spinbox):
+    def __init__(self, parent, **options):
+        self.options = options
+        self.options.setdefault('bg', '#fff')
+        super().__init__(parent, **self.options)
+
+
+class optionMenu(ttk.OptionMenu):
+    def __init__(self, master, variable, default=None, *values, style="", direction="below", command=None):
+
+        super().__init__(master, variable, default, *values,
+                         style=style, direction=direction, command=command)
 
 
 class Input(tk.Entry):
-    pass
+    def __init__(self, parent=None, **options):
+        self.options = options
+        self.options.setdefault('bg', '#fff')
+        super().__init__(parent, **self.options)
+
+
+def test():
+    root = Window()
+    entry = Input(root)
+    entry.pack()
+    entry = countBox(root)
+    entry.pack()
+    # entry = optionMenu(root)
+    # entry.pack()
+    root.mainloop()
+
+
+if __name__ == '__main__':
+    test()
